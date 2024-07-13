@@ -16,7 +16,7 @@ private struct DynamicShortcutRecorder: View {
 
 	var body: some View {
 		HStack(alignment: .firstTextBaseline) {
-			KeyboardShortcuts.Recorder(for: name)
+            KeyboardShortcuts.Recorder(for: name, background: .red, textColor: .green)
 				.focused($isFocused)
 				.padding(.trailing, 10)
 			Text("Pressed? \(isPressed ? "👍" : "👎")")

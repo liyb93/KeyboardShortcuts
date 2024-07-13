@@ -6,6 +6,8 @@ extension KeyboardShortcuts {
 		typealias NSViewType = RecorderCocoa
 
 		let name: Name
+        let background: Color?
+        let textColor: Color?
 		let onChange: ((_ shortcut: Shortcut?) -> Void)?
 
 		func makeNSView(context: Context) -> NSViewType {
@@ -14,6 +16,13 @@ extension KeyboardShortcuts {
 
 		func updateNSView(_ nsView: NSViewType, context: Context) {
 			nsView.shortcutName = name
+            if let background = background {
+                nsView.backgroundColor = NSColor(background)
+            }
+            if let textColor = textColor {
+                nsView.textColor = NSColor(textColor)
+            }
+        
 		}
 	}
 
@@ -44,14 +53,20 @@ extension KeyboardShortcuts {
 		private let onChange: ((Shortcut?) -> Void)?
 		private let hasLabel: Bool
 		private let label: Label
+        private let background: Color?
+        private let textColor: Color?
 
 		init(
 			for name: Name,
+            background: Color? = nil,
+            textColor: Color? = nil,
 			onChange: ((Shortcut?) -> Void)? = nil,
 			hasLabel: Bool,
 			@ViewBuilder label: () -> Label
 		) {
 			self.name = name
+            self.background = background
+            self.textColor = textColor
 			self.onChange = onChange
 			self.hasLabel = hasLabel
 			self.label = label()
@@ -63,6 +78,8 @@ extension KeyboardShortcuts {
 					LabeledContent {
 						_Recorder(
 							name: name,
+                            background: background,
+                            textColor: textColor,
 							onChange: onChange
 						)
 					} label: {
@@ -71,6 +88,8 @@ extension KeyboardShortcuts {
 				} else {
 					_Recorder(
 						name: name,
+                        background: background,
+                        textColor: textColor,
 						onChange: onChange
 					)
 						.formLabel {
@@ -80,6 +99,8 @@ extension KeyboardShortcuts {
 			} else {
 				_Recorder(
 					name: name,
+                    background: background,
+                    textColor: textColor,
 					onChange: onChange
 				)
 			}
@@ -94,10 +115,14 @@ extension KeyboardShortcuts.Recorder<EmptyView> {
 	*/
 	public init(
 		for name: KeyboardShortcuts.Name,
+        background: Color? = nil,
+        textColor: Color? = nil,
 		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
 	) {
 		self.init(
 			for: name,
+            background: background,
+            textColor: textColor,
 			onChange: onChange,
 			hasLabel: false
 		) {}
@@ -113,10 +138,14 @@ extension KeyboardShortcuts.Recorder<Text> {
 	public init(
 		_ title: LocalizedStringKey,
 		name: KeyboardShortcuts.Name,
+        background: Color? = nil,
+        textColor: Color? = nil,
 		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
 	) {
 		self.init(
 			for: name,
+            background: background,
+            textColor: textColor,
 			onChange: onChange,
 			hasLabel: true
 		) {
@@ -135,10 +164,14 @@ extension KeyboardShortcuts.Recorder<Text> {
 	public init(
 		_ title: String,
 		name: KeyboardShortcuts.Name,
+        background: Color? = nil,
+        textColor: Color? = nil,
 		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
 	) {
 		self.init(
 			for: name,
+            background: background,
+            textColor: textColor,
 			onChange: onChange,
 			hasLabel: true
 		) {
@@ -155,11 +188,15 @@ extension KeyboardShortcuts.Recorder {
 	*/
 	public init(
 		for name: KeyboardShortcuts.Name,
+        background: Color? = nil,
+        textColor: Color? = nil,
 		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil,
 		@ViewBuilder label: () -> Label
 	) {
 		self.init(
 			for: name,
+            background: background,
+            textColor: textColor,
 			onChange: onChange,
 			hasLabel: true,
 			label: label
