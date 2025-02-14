@@ -123,12 +123,12 @@ extension KeyboardShortcuts {
 				guard
 					let self,
 					let nameInNotification = notification.userInfo?["name"] as? KeyboardShortcuts.Name,
-					nameInNotification == self.shortcutName
+					nameInNotification == shortcutName
 				else {
 					return
 				}
 
-				self.setStringValue(name: nameInNotification)
+				setStringValue(name: nameInNotification)
 			}
 		}
 
@@ -138,6 +138,7 @@ extension KeyboardShortcuts {
 			showsCancelButton = !stringValue.isEmpty
 			restoreCaret()
 			KeyboardShortcuts.isPaused = false
+			NotificationCenter.default.post(name: .recorderActiveStatusDidChange, object: nil, userInfo: ["isActive": false])
 		}
 
 		private func preventBecomingKey() {
@@ -187,7 +188,7 @@ extension KeyboardShortcuts {
 					return
 				}
 
-				self.endRecording()
+				endRecording()
 				window.makeFirstResponder(nil)
 			}
 
@@ -211,20 +212,21 @@ extension KeyboardShortcuts {
 			showsCancelButton = !stringValue.isEmpty
 			hideCaret()
 			KeyboardShortcuts.isPaused = true // The position here matters.
+			NotificationCenter.default.post(name: .recorderActiveStatusDidChange, object: nil, userInfo: ["isActive": true])
 
 			eventMonitor = LocalEventMonitor(events: [.keyDown, .leftMouseUp, .rightMouseUp]) { [weak self] event in
 				guard let self else {
 					return nil
 				}
 
-				let clickPoint = self.convert(event.locationInWindow, from: nil)
+				let clickPoint = convert(event.locationInWindow, from: nil)
 				let clickMargin = 3.0
 
 				if
 					event.type == .leftMouseUp || event.type == .rightMouseUp,
-					!self.bounds.insetBy(dx: -clickMargin, dy: -clickMargin).contains(clickPoint)
+					!bounds.insetBy(dx: -clickMargin, dy: -clickMargin).contains(clickPoint)
 				{
-					self.blur()
+					blur()
 					return event
 				}
 
@@ -236,7 +238,7 @@ extension KeyboardShortcuts {
 					event.modifiers.isEmpty,
 					event.specialKey == .tab
 				{
-					self.blur()
+					blur()
 
 					// We intentionally bubble up the event so it can focus the next responder.
 					return event
@@ -246,7 +248,7 @@ extension KeyboardShortcuts {
 					event.modifiers.isEmpty,
 					event.keyCode == kVK_Escape // TODO: Make this strongly typed.
 				{
-					self.blur()
+					blur()
 					return nil
 				}
 
@@ -256,13 +258,13 @@ extension KeyboardShortcuts {
 						|| event.specialKey == .deleteForward
 						|| event.specialKey == .backspace
 				{
-					self.clear()
+					clear()
 					return nil
 				}
 
 				// The “shift” key is not allowed without other modifiers or a function key, since it doesn't actually work.
 				guard
-					!event.modifiers.subtracting(.shift).isEmpty
+					!event.modifiers.subtracting([.shift, .function]).isEmpty
 						|| event.specialKey?.isFunctionKey == true,
 					let shortcut = Shortcut(event: event)
 				else {
@@ -272,23 +274,36 @@ extension KeyboardShortcuts {
 
 				if let menuItem = shortcut.takenByMainMenu {
 					// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
-					self.blur()
+					blur()
 
 					NSAlert.showModal(
-						for: self.window,
+						for: window,
 						title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
 					)
 
-					self.focus()
+					focus()
 
 					return nil
 				}
 
+				// See: https://developer.apple.com/forums/thread/763878?answerId=804374022#804374022
+				if shortcut.isDisallowed {
+					blur()
+
+					NSAlert.showModal(
+						for: window,
+						title: "keyboard_shortcut_disallowed".localized
+					)
+
+					focus()
+					return nil
+				}
+
 				if shortcut.isTakenBySystem {
-					self.blur()
+					blur()
 
 					let modalResponse = NSAlert.showModal(
-						for: self.window,
+						for: window,
 						title: "keyboard_shortcut_used_by_system".localized,
 						// TODO: Add button to offer to open the relevant system settings pane for the user.
 						message: "keyboard_shortcuts_can_be_changed".localized,
@@ -298,7 +313,7 @@ extension KeyboardShortcuts {
 						]
 					)
 
-					self.focus()
+					focus()
 
 					// If the user has selected "Use Anyway" in the dialog (the second option), we'll continue setting the keyboard shorcut even though it's reserved by the system.
 					guard modalResponse == .alertSecondButtonReturn else {
@@ -306,11 +321,11 @@ extension KeyboardShortcuts {
 					}
 				}
 
-				self.stringValue = "\(shortcut)"
-				self.showsCancelButton = true
+				stringValue = "\(shortcut)"
+				showsCancelButton = true
 
-				self.saveShortcut(shortcut)
-				self.blur()
+				saveShortcut(shortcut)
+				blur()
 
 				return nil
 			}.start()
@@ -323,5 +338,9 @@ extension KeyboardShortcuts {
 			onChange?(shortcut)
 		}
 	}
+}
+
+extension Notification.Name {
+	static let recorderActiveStatusDidChange = Self("KeyboardShortcuts_recorderActiveStatusDidChange")
 }
 #endif
