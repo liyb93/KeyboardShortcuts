@@ -8,6 +8,7 @@ extension KeyboardShortcuts {
 		let name: Name
         let background: Color?
         let textColor: Color?
+		let cornerRadius: CGFloat
 		let onChange: ((_ shortcut: Shortcut?) -> Void)?
 
 		func makeNSView(context: Context) -> NSViewType {
@@ -17,9 +18,9 @@ extension KeyboardShortcuts {
 		func updateNSView(_ nsView: NSViewType, context: Context) {
 			nsView.shortcutName = name
             if let background = background {
-                nsView.layer?.backgroundColor = NSColor(background).cgColor
-		nsView.layer?.cornerRadius = 4
-		nsView.layer?.masksToBounds = true
+				nsView.layer?.backgroundColor = NSColor(background).cgColor
+				nsView.layer?.cornerRadius = cornerRadius
+				nsView.layer?.masksToBounds = true
             }
             if let textColor = textColor {
                 nsView.textColor = NSColor(textColor)
@@ -59,11 +60,13 @@ extension KeyboardShortcuts {
 		private let label: Label
         private let background: Color?
         private let textColor: Color?
+		private let cornerRadius: CGFloat
 
 		init(
 			for name: Name,
             background: Color? = nil,
             textColor: Color? = nil,
+			cornerRadius: CGFloat = 4,
 			onChange: ((Shortcut?) -> Void)? = nil,
 			hasLabel: Bool,
 			@ViewBuilder label: () -> Label
@@ -71,6 +74,7 @@ extension KeyboardShortcuts {
 			self.name = name
             self.background = background
             self.textColor = textColor
+			self.cornerRadius = cornerRadius
 			self.onChange = onChange
 			self.hasLabel = hasLabel
 			self.label = label()
@@ -84,6 +88,7 @@ extension KeyboardShortcuts {
 							name: name,
                             background: background,
                             textColor: textColor,
+							cornerRadius: cornerRadius,
 							onChange: onChange
 						)
 					} label: {
@@ -94,6 +99,7 @@ extension KeyboardShortcuts {
 						name: name,
                         background: background,
                         textColor: textColor,
+						cornerRadius: cornerRadius,
 						onChange: onChange
 					)
 						.formLabel {
@@ -105,6 +111,7 @@ extension KeyboardShortcuts {
 					name: name,
                     background: background,
                     textColor: textColor,
+					cornerRadius: cornerRadius,
 					onChange: onChange
 				)
 			}
@@ -121,12 +128,14 @@ extension KeyboardShortcuts.Recorder<EmptyView> {
 		for name: KeyboardShortcuts.Name,
         background: Color? = nil,
         textColor: Color? = nil,
+		cornerRadius: CGFloat = 4,
 		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
 	) {
 		self.init(
 			for: name,
             background: background,
             textColor: textColor,
+			cornerRadius: cornerRadius,
 			onChange: onChange,
 			hasLabel: false
 		) {}
@@ -144,12 +153,14 @@ extension KeyboardShortcuts.Recorder<Text> {
 		name: KeyboardShortcuts.Name,
         background: Color? = nil,
         textColor: Color? = nil,
+		cornerRadius: CGFloat = 4,
 		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
 	) {
 		self.init(
 			for: name,
             background: background,
             textColor: textColor,
+			cornerRadius: cornerRadius,
 			onChange: onChange,
 			hasLabel: true
 		) {
@@ -170,12 +181,14 @@ extension KeyboardShortcuts.Recorder<Text> {
 		name: KeyboardShortcuts.Name,
         background: Color? = nil,
         textColor: Color? = nil,
+		cornerRadius: CGFloat = 4,
 		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
 	) {
 		self.init(
 			for: name,
             background: background,
             textColor: textColor,
+			cornerRadius: cornerRadius,
 			onChange: onChange,
 			hasLabel: true
 		) {
@@ -194,6 +207,7 @@ extension KeyboardShortcuts.Recorder {
 		for name: KeyboardShortcuts.Name,
         background: Color? = nil,
         textColor: Color? = nil,
+		cornerRadius: CGFloat = 4,
 		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil,
 		@ViewBuilder label: () -> Label
 	) {
@@ -201,6 +215,7 @@ extension KeyboardShortcuts.Recorder {
 			for: name,
             background: background,
             textColor: textColor,
+			cornerRadius: cornerRadius,
 			onChange: onChange,
 			hasLabel: true,
 			label: label
