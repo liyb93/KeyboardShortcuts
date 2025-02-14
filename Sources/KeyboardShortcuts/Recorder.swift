@@ -17,7 +17,9 @@ extension KeyboardShortcuts {
 		func updateNSView(_ nsView: NSViewType, context: Context) {
 			nsView.shortcutName = name
             if let background = background {
-                nsView.backgroundColor = NSColor(background)
+                nsView.layer?.backgroundColor = NSColor(background).cgColor
+		nsView.layer?.cornerRadius = 4
+		nsView.layer?.masksToBounds = true
             }
             if let textColor = textColor {
                 nsView.textColor = NSColor(textColor)
